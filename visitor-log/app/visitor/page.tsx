@@ -1,145 +1,141 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-export default function VisitorPage() {
-  const [form, setForm] = useState({
-    name: "",
-    mobile_number: "",
-    purpose_of_visit: "",
-    college: "",
-    person_to_meet: "",
-    comment_feedback: "",
-    latitude: null as number | null,
-    longitude: null as number | null,
-  });
+const colleges = [
+  "Symbiosis Institute of Media & Communication (SIMC)",
+  "Symbiosis Institute of Business Management (SIBM)",
+  "Symbiosis Institute of Digital and Telecom Management (SIDTM)",
+  "Symbiosis Institute of Technology (SIT)",
+  "Symbiosis School of Banking and Finance (SSBF)",
+  "Symbiosis School of Biological Sciences (SSBS)",
+  "Symbiosis School of Visual Arts and Photography (SSVAP)",
+  "Symbiosis School of Culinary Arts and Nutritional Sciences (SSCANs)",
+  "Symbiosis College of Nursing (SCON)",
+  "Symbiosis School of Online and Digital Learning (SSODL)",
+  "Symbiosis Centre for Health Skills (SCHS)",
+  "Symbiosis School of Sports Sciences (SSSS)",
+  "Symbiosis Institute of Health Sciences (SIHS)",
+  "Symbiosis Medical College for Women (SMCW)",
+  "Symbiosis Artificial Intelligence Institute (SAII)",
+  "Symbiosis College of Physiotherapy",
+  "Symbiosis Community Outreach Programme & Extension (SCOPE)",
+  "Symbiosis Centre for Entrepreneurship and Innovation (SCEI)",
+  "Symbiosis Centre for Research and Innovation (SCRI)",
+  "Symbiosis Teaching Learning Resource Centre (STLRC)",
+  "Symbiosis University Hospital and Research Centre (SUHRC)",
+];
 
-  const [loading, setLoading] = useState(false);
-
-  // 📍 Auto-capture location when page loads
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setForm((prev) => ({
-            ...prev,
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-          }));
-        },
-        (err) => {
-          console.warn("Location access denied:", err.message);
-        }
-      );
-    }
-  }, []);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+export default function VisitorForm() {
+  const [name, setName] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [college, setCollege] = useState("");
+  const [personToMeet, setPersonToMeet] = useState("");
+  const [purpose, setPurpose] = useState("");
+  const [feedback, setFeedback] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
-    const { error } = await supabase.from("visitors").insert([form]);
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const { latitude, longitude } = pos.coords;
 
-    setLoading(false);
+      const { error } = await supabase.from("visitors").insert([
+        {
+          name,
+          mobile_number: mobile,
+          college,
+          person_to_meet: personToMeet,
+          purpose_of_visit: purpose,
+          comment_feedback: feedback,
+          latitude,
+          longitude,
+        },
+      ]);
 
-    if (error) {
-      console.error(error);
-      alert("❌ Error saving visitor: " + error.message);
-    } else {
-      alert("✅ Visitor saved!");
-      setForm({
-        name: "",
-        mobile_number: "",
-        purpose_of_visit: "",
-        college: "",
-        person_to_meet: "",
-        comment_feedback: "",
-        latitude: form.latitude,
-        longitude: form.longitude,
-      });
-    }
+      if (error) {
+        alert("Error: " + error.message);
+      } else {
+        alert("Visitor logged successfully!");
+      }
+    });
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-xl rounded-2xl">
-        <CardHeader>
-          <CardTitle className="text-xl">Visitor Registration</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="mobile_number">Mobile Number</Label>
-              <Input
-                id="mobile_number"
-                name="mobile_number"
-                value={form.mobile_number}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="purpose_of_visit">Purpose of Visit</Label>
-              <Input
-                id="purpose_of_visit"
-                name="purpose_of_visit"
-                value={form.purpose_of_visit}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <Label htmlFor="college">College</Label>
-              <Input
-                id="college"
-                name="college"
-                value={form.college}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <Label htmlFor="person_to_meet">Person to Meet</Label>
-              <Input
-                id="person_to_meet"
-                name="person_to_meet"
-                value={form.person_to_meet}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <Label htmlFor="comment_feedback">Comments / Feedback</Label>
-              <Input
-                id="comment_feedback"
-                name="comment_feedback"
-                value={form.comment_feedback}
-                onChange={handleChange}
-              />
-            </div>
+    <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
+      <div>
+        <Label>Name</Label>
+        <Input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+      </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Saving..." : "Submit"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+      <div>
+        <Label>Mobile Number</Label>
+        <Input
+          value={mobile}
+          onChange={(e) => setMobile(e.target.value)}
+          required
+        />
+      </div>
+
+      <div>
+        <Label>College</Label>
+        <Select onValueChange={setCollege}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select a college" />
+          </SelectTrigger>
+          <SelectContent>
+            {colleges.map((col) => (
+              <SelectItem key={col} value={col}>
+                {col}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label>Person to Meet</Label>
+        <Input
+          value={personToMeet}
+          onChange={(e) => setPersonToMeet(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <Label>Purpose of Visit</Label>
+        <Textarea
+          value={purpose}
+          onChange={(e) => setPurpose(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <Label>Comment / Feedback</Label>
+        <Textarea
+          value={feedback}
+          onChange={(e) => setFeedback(e.target.value)}
+        />
+      </div>
+
+      <Button type="submit" className="w-full">
+        Submit
+      </Button>
+    </form>
   );
 }
