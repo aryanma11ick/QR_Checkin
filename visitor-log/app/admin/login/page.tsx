@@ -4,12 +4,23 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { User } from "@supabase/supabase-js";
+
+type Visitor = {
+  id: string;
+  name: string;
+  mobile_number: string;
+  college: string;
+  person_to_meet: string;
+  purpose_of_visit: string;
+  in_time: string;
+};
 
 export default function AdminPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [visitors, setVisitors] = useState<any[]>([]);
+  const [visitors, setVisitors] = useState<Visitor[]>([]);
 
   // Check session on mount
   useEffect(() => {
@@ -39,8 +50,12 @@ export default function AdminPage() {
       .from("visitors")
       .select("*")
       .order("in_time", { ascending: false });
-    if (error) console.error(error);
-    else setVisitors(data || []);
+
+    if (error) {
+      console.error(error);
+    } else {
+      setVisitors((data as Visitor[]) || []);
+    }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
