@@ -109,7 +109,7 @@ export default function AdminPage() {
   // If logged in → Visitor Records
   // -------------------------
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#FDFCFB] to-[#E2D1C3] p-10">
+    <main className="min-h-screen bg-gradient-to-br from-[#5381ED] to-[#2A7B9B] p-10">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Visitor Records</h1>
         <Button variant="destructive" onClick={handleLogout}>
