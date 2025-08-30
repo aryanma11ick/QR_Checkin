@@ -49,6 +49,11 @@ export default function VisitorForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!college) {
+      alert("Please select a college");
+      return;
+    }
+
     navigator.geolocation.getCurrentPosition(async (pos) => {
       const { latitude, longitude } = pos.coords;
 
@@ -69,73 +74,95 @@ export default function VisitorForm() {
         alert("Error: " + error.message);
       } else {
         alert("Visitor logged successfully!");
+        setName("");
+        setMobile("");
+        setCollege("");
+        setPersonToMeet("");
+        setPurpose("");
+        setFeedback("");
       }
     });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
-      <div>
-        <Label>Name</Label>
-        <Input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-[#5381ED] to-[#2A7B9B] flex items-center justify-center px-4 font-sans">
+      <div className="w-full max-w-lg bg-white/90 shadow-lg rounded-2xl p-8">
+        <h1 className="text-4xl font-bold text-center text-gray-800 mb-10">
+          Visitor Form – <span className="text-blue-500">ExploreIT</span>
+        </h1>
 
-      <div>
-        <Label>Mobile Number</Label>
-        <Input
-          value={mobile}
-          onChange={(e) => setMobile(e.target.value)}
-          required
-        />
-      </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label>Name *</Label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
 
-      <div>
-        <Label>College</Label>
-        <Select onValueChange={setCollege}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select a college" />
-          </SelectTrigger>
-          <SelectContent>
-            {colleges.map((col) => (
-              <SelectItem key={col} value={col}>
-                {col}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+          <div>
+            <Label>Mobile Number *</Label>
+            <Input
+              type="tel"
+              pattern="[0-9]{10}"
+              maxLength={10}
+              value={mobile}
+              onChange={(e) => setMobile(e.target.value)}
+              required
+            />
+          </div>
 
-      <div>
-        <Label>Person to Meet</Label>
-        <Input
-          value={personToMeet}
-          onChange={(e) => setPersonToMeet(e.target.value)}
-        />
-      </div>
+          <div>
+            <Label>College *</Label>
+            <Select onValueChange={setCollege} value={college} required>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a college" />
+              </SelectTrigger>
+              <SelectContent>
+                {colleges.map((col) => (
+                  <SelectItem key={col} value={col}>
+                    {col}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-      <div>
-        <Label>Purpose of Visit</Label>
-        <Textarea
-          value={purpose}
-          onChange={(e) => setPurpose(e.target.value)}
-        />
-      </div>
+          <div>
+            <Label>Person to Meet *</Label>
+            <Input
+              value={personToMeet}
+              onChange={(e) => setPersonToMeet(e.target.value)}
+              required
+            />
+          </div>
 
-      <div>
-        <Label>Comment / Feedback</Label>
-        <Textarea
-          value={feedback}
-          onChange={(e) => setFeedback(e.target.value)}
-        />
-      </div>
+          <div>
+            <Label>Purpose of Visit *</Label>
+            <Textarea
+              value={purpose}
+              onChange={(e) => setPurpose(e.target.value)}
+              required
+            />
+          </div>
 
-      <Button type="submit" className="w-full">
-        Submit
-      </Button>
-    </form>
+          <div>
+            <Label>Comment / Feedback (optional)</Label>
+            <Textarea
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+            />
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full rounded-xl shadow-md hover:shadow-lg"
+          >
+            Submit
+          </Button>
+        </form>
+      </div>
+    </div>
   );
 }
