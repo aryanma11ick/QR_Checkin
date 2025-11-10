@@ -1,11 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
-import { DateRange } from "react-day-picker"; // ✅ Fix: Import official DateRange type
+import { DateRange } from "react-day-picker";
 
 import {
   Table,
@@ -41,6 +42,9 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 
+// 🧩 Import your logo (place logo.png inside `/public`)
+import Logo from "@/public/logo.png";
+
 type Visitor = {
   id: string;
   name: string;
@@ -64,7 +68,7 @@ export default function VisitorDashboardClient({
   const [sortKey, setSortKey] = useState<keyof Visitor>("in_time");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [loggingOut, setLoggingOut] = useState(false);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(); // ✅ Proper type usage
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
   const rowsPerPage = 10;
 
@@ -180,11 +184,22 @@ export default function VisitorDashboardClient({
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#f5f7fa] via-[#e9ecf2] to-[#dce3ef] dark:from-[#0a0b0f] dark:via-[#10131a] dark:to-[#141821] p-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
-        <h1 className="text-3xl font-semibold bg-gradient-to-r from-[#3b82f6] to-[#2563eb] bg-clip-text text-transparent">
-          Visitor Logs
-        </h1>
-        <div className="flex gap-3">
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+        <div className="flex items-center gap-3">
+          <Image
+            src={Logo}
+            alt="App Logo"
+            width={44}
+            height={44}
+            className="rounded-lg object-contain dark:brightness-90"
+            priority
+          />
+          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-500 bg-clip-text text-transparent">
+            Visitor Logs
+          </h1>
+        </div>
+
+        <div className="flex gap-3 mt-4 sm:mt-0">
           <Button
             onClick={exportCSV}
             className="bg-gradient-to-r from-[#5381ED] to-[#2A7B9B] text-white hover:opacity-90"
@@ -201,7 +216,7 @@ export default function VisitorDashboardClient({
             {loggingOut ? "Logging out..." : "Logout"}
           </Button>
         </div>
-      </div>
+      </header>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 justify-between items-center mb-6">

@@ -117,7 +117,14 @@ export default function VisitorLogsPage({ initialVisitors }: VisitorLogsPageProp
     page * rowsPerPage
   );
 
-  // Export CSV
+  // Helper: CSV-safe escape (wrap in quotes and double any internal quotes)
+  const csvEscape = (value: any) => {
+    if (value === null || value === undefined) return '""';
+    const s = String(value);
+    return `"${s.replace(/"/g, '""')}"`;
+  };
+
+  // Export CSV (Excel-friendly)
   const exportCSV = () => {
     const header = [
       "Name",
@@ -131,27 +138,68 @@ export default function VisitorLogsPage({ initialVisitors }: VisitorLogsPageProp
 
     const rows = sortedRows.map((v) => {
       const d = v.in_time ? new Date(v.in_time) : null;
-      const date = d ? d.toISOString().split("T")[0] : "-";
-      const time = d ? d.toTimeString().split(" ")[0] : "-";
+
+      // Format date as DD-MM-YYYY for readability in Excel
+      const date =
+        d
+          ? [
+              String(d.getDate()).padStart(2, "0"),
+              String(d.getMonth() + 1).padStart(2, "0"),
+              String(d.getFullYear()),
+            ].join("-")
+          : "-";
+
+      // Format time as HH:MM:SS (24h)
+      const time = d
+        ? [
+            String(d.getHours()).padStart(2, "0"),
+            String(d.getMinutes()).padStart(2, "0"),
+            String(d.getSeconds()).padStart(2, "0"),
+          ].join(":")
+        : "-";
+
+      // Prevent Excel scientific notation by using ="1234567890"
+      const safeMobile = v.mobile_number
+        ? `="${String(v.mobile_number)}"`
+        : '""';
+
       return [
-        v.name,
-        v.mobile_number,
-        v.college ?? "",
-        v.person_to_meet,
-        v.purpose_of_visit,
-        date,
-        time,
+        csvEscape(v.name),
+        safeMobile, // intentionally not escaped with csvEscape so Excel keeps it as formula-like ="..."
+        csvEscape(v.college ?? ""),
+        csvEscape(v.person_to_meet),
+        csvEscape(v.purpose_of_visit),
+        csvEscape(date),
+        csvEscape(time),
       ];
     });
 
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [header, ...rows].map((e) => e.join(",")).join("\n");
+    // Build CSV string
+    const csvArray = [
+      header.map(csvEscape).join(","), // header
+      ...rows.map((r) => r.join(",")),
+    ];
+    const csvString = csvArray.join("\n");
+
+    // Create blob and download with timestamped filename
+    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const now = new Date();
+    const filename = `visitor_logs_${now.getFullYear()}${String(
+      now.getMonth() + 1
+    ).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}_${String(
+      now.getHours()
+    ).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}${String(
+      now.getSeconds()
+    ).padStart(2, "0")}.csv`;
 
     const link = document.createElement("a");
-    link.href = csvContent;
-    link.download = "visitor_logs.csv";
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
     link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
   };
 
   const toggleFilter = (tag: string) => {
